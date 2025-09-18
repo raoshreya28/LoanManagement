@@ -1,21 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
-    public enum NotificationStatus
-    { Sent, Failed }
+    public enum NotificationStatus { Sent, Failed }
 
     public class Notification
     {
         [Key]
         public int NotificationId { get; set; }
 
-        [Required]
         public int? CustomerId { get; set; }
-        public virtual Customer? Customer { get; set; }
+        public Customer? Customer { get; set; }
 
         public int? LoanApplicationId { get; set; }
-        public virtual LoanApplication? LoanApplication { get; set; }
+        public LoanApplication? LoanApplication { get; set; }
 
         [Required]
         [StringLength(1000)]

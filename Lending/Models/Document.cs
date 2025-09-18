@@ -1,44 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
-    public enum DocumentType
-    {
-        Aadhaar,
-        PAN,
-        BankStatement,
-        IncomeProof,
-        Other
-    }
+    public enum DocumentType { Aadhaar, PAN, BankStatement, IncomeProof, Other }
 
     public class Document
     {
         [Key]
         public int DocumentId { get; set; }
 
-        // Customer is required
         [Required]
-        public int CustomerId { get; set; }   // Not nullable
-        public virtual Customer Customer { get; set; }  // navigation property
+        public int CustomerId { get; set; }
+        public Customer Customer { get; set; }
 
-        // LoanApplication is optional
+        // optional link to application — NULL when not attached or when app is deleted (we will restrict cascade)
         public int? LoanApplicationId { get; set; }
-        public virtual LoanApplication? LoanApplication { get; set; } // optional navigation
+        public LoanApplication? LoanApplication { get; set; }
 
         [Required]
         public DocumentType Type { get; set; }
 
         [Required(ErrorMessage = "Document URL is required")]
         [StringLength(500)]
-        public string Url { get; set; } // Store Cloudinary URL
+        public string Url { get; set; }
 
         [Required]
         public bool IsVerified { get; set; } = false;
 
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
-
         public DateTime? VerifiedAt { get; set; }
     }
 }

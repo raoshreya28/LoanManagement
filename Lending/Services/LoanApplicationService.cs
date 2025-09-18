@@ -119,7 +119,7 @@ namespace Lending.Services
 
             if (assignedOfficer != null)
             {
-                application.LoanOfficerId = assignedOfficer.LoanOfficerId;
+                application.LoanOfficerId = assignedOfficer.UserId;
                 await _context.SaveChangesAsync();
             }
         }

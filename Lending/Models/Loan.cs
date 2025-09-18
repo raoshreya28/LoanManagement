@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Lending.Models
@@ -8,13 +10,11 @@ namespace Lending.Models
         [Key]
         public int LoanId { get; set; }
 
-        [Required]
         public int? CustomerId { get; set; }
-        public virtual Customer? Customer { get; set; }
+        public Customer? Customer { get; set; }
 
-        [Required]
         public int? LoanApplicationId { get; set; }
-        public virtual LoanApplication? LoanApplication { get; set; }
+        public LoanApplication? LoanApplication { get; set; }
 
         [Required]
         [Range(0, double.MaxValue)]
@@ -35,7 +35,6 @@ namespace Lending.Models
         [Required]
         public DateTime EndDate { get; set; }
 
-        // Navigation property
         public ICollection<Repayment>? Repayments { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
@@ -33,7 +35,6 @@ namespace Lending.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation property
         public ICollection<LoanApplication>? LoanApplications { get; set; }
     }
 }

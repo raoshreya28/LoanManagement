@@ -80,7 +80,7 @@ namespace Lending.Services
                 _context.LoanOfficers.Update(assignedOfficer);
 
                 // Update application
-                application.LoanOfficerId = assignedOfficer.LoanOfficerId;
+                application.LoanOfficerId = assignedOfficer.UserId;
                 _context.LoanApplications.Update(application);
 
                 await _context.SaveChangesAsync();

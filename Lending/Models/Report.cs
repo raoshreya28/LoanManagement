@@ -1,14 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
-    public enum ReportType
-    {
-        LoanStatus,
-        NPAReport,
-        CustomerReport,
-        RepaymentReport
-    }
+    public enum ReportType { LoanStatus, NPAReport, CustomerReport, RepaymentReport }
 
     public class Report
     {
@@ -24,13 +19,12 @@ namespace Lending.Models
 
         [Required(ErrorMessage = "Report URL or content is required")]
         [StringLength(1000)]
-        public string Url { get; set; } // Could be a file URL or cloud storage link
+        public string Url { get; set; }
 
         [Required]
         public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 
-        [Required]
-        public int? GeneratedById { get; set; } // Admin user who generated
-        public virtual LoanAdmin? GeneratedBy { get; set; }
+        public int? GeneratedById { get; set; }
+        public LoanAdmin? GeneratedBy { get; set; }
     }
 }

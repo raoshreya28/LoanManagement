@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lending.Data;
+﻿using Lending.Data;
 using Lending.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lending.Repositories
 {
@@ -22,7 +21,7 @@ namespace Lending.Repositories
 
         public async Task<LoanAdmin?> GetByIdAsync(int id)
         {
-            return await _context.LoanAdmins.FirstOrDefaultAsync(a => a.AdminId == id);
+            return await _context.LoanAdmins.FirstOrDefaultAsync(a => a.UserId == id);
         }
 
         public async Task<LoanAdmin> CreateAsync(LoanAdmin admin)
@@ -41,7 +40,7 @@ namespace Lending.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var existing = await _context.LoanAdmins.FirstOrDefaultAsync(a => a.AdminId == id);
+            var existing = await _context.LoanAdmins.FirstOrDefaultAsync(a => a.UserId == id);
             if (existing != null)
             {
                 _context.LoanAdmins.Remove(existing);
