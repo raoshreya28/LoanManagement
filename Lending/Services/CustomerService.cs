@@ -49,7 +49,7 @@ namespace Lending.Services
         {
             return await _context.Customers
                                  .Include(c => c.LoanApplications)
-                                 .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+                                 .FirstOrDefaultAsync(c => c.UserId == customerId);
         }
 
         public async Task<IEnumerable<LoanApplication>> GetLoanApplicationsAsync(int customerId)

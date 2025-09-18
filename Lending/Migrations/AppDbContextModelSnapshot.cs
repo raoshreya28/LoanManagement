@@ -62,6 +62,44 @@ namespace Lending.Migrations
                     b.ToTable("Documents");
                 });
 
+            modelBuilder.Entity("Lending.Models.Loan", b =>
+                {
+                    b.Property<int>("LoanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanId"));
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("InterestRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("LoanApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrincipalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TenureMonths")
+                        .HasColumnType("int");
+
+                    b.HasKey("LoanId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("LoanApplicationId");
+
+                    b.ToTable("Loans");
+                });
+
             modelBuilder.Entity("Lending.Models.LoanApplication", b =>
                 {
                     b.Property<int>("LoanApplicationId")
@@ -91,7 +129,6 @@ namespace Lending.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("LoanSchemeId")
-                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<string>("Remarks")
@@ -157,6 +194,40 @@ namespace Lending.Migrations
                     b.ToTable("LoanSchemes");
                 });
 
+            modelBuilder.Entity("Lending.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LoanApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("LoanApplicationId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("Lending.Models.Repayment", b =>
                 {
                     b.Property<int>("RepaymentId")
@@ -178,6 +249,9 @@ namespace Lending.Migrations
                         .IsRequired()
                         .HasColumnType("int");
 
+                    b.Property<int?>("LoanId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("PaidDate")
                         .HasColumnType("datetime2");
 
@@ -188,7 +262,43 @@ namespace Lending.Migrations
 
                     b.HasIndex("LoanApplicationId");
 
+                    b.HasIndex("LoanId");
+
                     b.ToTable("Repayments");
+                });
+
+            modelBuilder.Entity("Lending.Models.Report", b =>
+                {
+                    b.Property<int>("ReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GeneratedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("GeneratedById");
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("Lending.Models.User", b =>
@@ -290,9 +400,6 @@ namespace Lending.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("AdminId")
-                        .HasColumnType("int");
-
                     b.ToTable("LoanAdmins", (string)null);
 
                     b.HasData(
@@ -300,15 +407,14 @@ namespace Lending.Migrations
                         {
                             UserId = 1,
                             Address = "Head Office",
-                            CreatedAt = new DateTime(2025, 9, 17, 17, 46, 3, 7, DateTimeKind.Utc).AddTicks(691),
+                            CreatedAt = new DateTime(2025, 9, 18, 7, 18, 58, 420, DateTimeKind.Utc).AddTicks(7197),
                             IsActive = true,
-                            PasswordHash = "$2a$11$o5DuoMAzo.oL7fTkv6zLBuSdRYqS60iN1VP6lfMHNXstsNp6aHJmO",
+                            PasswordHash = "$2a$11$HQeqXgpReDZHeEGRJ5b3H.Gl2f2t8k6VjzBGWUk7rbztp0u96BmlS",
                             Role = 0,
                             UserEmail = "admin@lending.com",
                             UserName = "Default Admin",
                             UserPhone = "123-456-7890",
-                            AdminDepartment = "Finance",
-                            AdminId = 0
+                            AdminDepartment = "Finance"
                         });
                 });
 
@@ -332,9 +438,6 @@ namespace Lending.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("LoanOfficerId")
-                        .HasColumnType("int");
-
                     b.ToTable("LoanOfficers", (string)null);
                 });
 
@@ -348,6 +451,23 @@ namespace Lending.Migrations
 
                     b.HasOne("Lending.Models.LoanApplication", "LoanApplication")
                         .WithMany("Documents")
+                        .HasForeignKey("LoanApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("LoanApplication");
+                });
+
+            modelBuilder.Entity("Lending.Models.Loan", b =>
+                {
+                    b.HasOne("Lending.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Lending.Models.LoanApplication", "LoanApplication")
+                        .WithMany()
                         .HasForeignKey("LoanApplicationId")
                         .OnDelete(DeleteBehavior.Restrict);
 
@@ -370,15 +490,30 @@ namespace Lending.Migrations
 
                     b.HasOne("Lending.Models.LoanScheme", "LoanScheme")
                         .WithMany("LoanApplications")
-                        .HasForeignKey("LoanSchemeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LoanSchemeId");
 
                     b.Navigation("Customer");
 
                     b.Navigation("LoanOfficer");
 
                     b.Navigation("LoanScheme");
+                });
+
+            modelBuilder.Entity("Lending.Models.Notification", b =>
+                {
+                    b.HasOne("Lending.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Lending.Models.LoanApplication", "LoanApplication")
+                        .WithMany()
+                        .HasForeignKey("LoanApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("LoanApplication");
                 });
 
             modelBuilder.Entity("Lending.Models.Repayment", b =>
@@ -389,7 +524,21 @@ namespace Lending.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Lending.Models.Loan", null)
+                        .WithMany("Repayments")
+                        .HasForeignKey("LoanId");
+
                     b.Navigation("LoanApplication");
+                });
+
+            modelBuilder.Entity("Lending.Models.Report", b =>
+                {
+                    b.HasOne("Lending.Models.LoanAdmin", "GeneratedBy")
+                        .WithMany()
+                        .HasForeignKey("GeneratedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("GeneratedBy");
                 });
 
             modelBuilder.Entity("Lending.Models.Customer", b =>
@@ -417,6 +566,11 @@ namespace Lending.Migrations
                         .HasForeignKey("Lending.Models.LoanOfficer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Lending.Models.Loan", b =>
+                {
+                    b.Navigation("Repayments");
                 });
 
             modelBuilder.Entity("Lending.Models.LoanApplication", b =>

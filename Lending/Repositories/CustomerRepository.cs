@@ -25,7 +25,7 @@ namespace Lending.Repositories
         {
             return await _context.Customers
                                  .Include(c => c.LoanApplications)
-                                 .FirstOrDefaultAsync(c => c.CustomerId == id);
+                                 .FirstOrDefaultAsync(c => c.UserId == id);
         }
 
         public async Task<Customer> CreateAsync(Customer customer)
@@ -44,7 +44,7 @@ namespace Lending.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var existing = await _context.Customers.FirstOrDefaultAsync(c => c.CustomerId == id);
+            var existing = await _context.Customers.FirstOrDefaultAsync(c => c.UserId == id);
             if (existing != null)
             {
                 _context.Customers.Remove(existing);
