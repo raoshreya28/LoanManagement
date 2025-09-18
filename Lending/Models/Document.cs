@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
@@ -16,13 +18,14 @@ namespace Lending.Models
         [Key]
         public int DocumentId { get; set; }
 
+        // Customer is required
         [Required]
-        public int? CustomerId { get; set; }
-        public virtual Customer? Customer { get; set; }
+        public int CustomerId { get; set; }   // Not nullable
+        public virtual Customer Customer { get; set; }  // navigation property
 
-        [Required]
+        // LoanApplication is optional
         public int? LoanApplicationId { get; set; }
-        public virtual LoanApplication? LoanApplication { get; set; }
+        public virtual LoanApplication? LoanApplication { get; set; } // optional navigation
 
         [Required]
         public DocumentType Type { get; set; }

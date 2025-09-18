@@ -47,5 +47,8 @@ namespace Lending.Models
 
         // Navigation property for repayments
         public ICollection<Repayment>? Repayments { get; set; }
+
+        public ICollection<Document>? Documents { get; set; }
+
     }
 }
