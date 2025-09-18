@@ -4,7 +4,6 @@ namespace Lending.Models
 {
     public class LoanOfficer : User
     {
-        [Key]
         public int LoanOfficerId { get; set; }  // Primary key 
 
         [Required(ErrorMessage = "Branch name is required")]

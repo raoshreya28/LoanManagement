@@ -4,7 +4,6 @@ namespace Lending.Models
 {
     public class LoanAdmin : User
     {
-        [Key]
         public int AdminId { get; set; } 
 
         [Required(ErrorMessage = "Admin Department is required")]
