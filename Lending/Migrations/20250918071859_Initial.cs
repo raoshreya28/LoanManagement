@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lending.Migrations
 {
     /// <inheritdoc />
-    public partial class CreatedModelsandDbcontext : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -57,7 +57,6 @@ namespace Lending.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
                     AadhaarNumber = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
                     PanNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     AnnualIncome = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
@@ -82,7 +81,6 @@ namespace Lending.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    AdminId = table.Column<int>(type: "int", nullable: false),
                     AdminDepartment = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -101,7 +99,6 @@ namespace Lending.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    LoanOfficerId = table.Column<int>(type: "int", nullable: false),
                     LoanOfficerBranch = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LoanOfficerCity = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     IsAvailable = table.Column<bool>(type: "bit", nullable: false),
@@ -128,7 +125,7 @@ namespace Lending.Migrations
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Url = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     GeneratedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    GeneratedById = table.Column<int>(type: "int", nullable: false)
+                    GeneratedById = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -138,7 +135,7 @@ namespace Lending.Migrations
                         column: x => x.GeneratedById,
                         principalTable: "LoanAdmins",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -148,7 +145,7 @@ namespace Lending.Migrations
                     LoanApplicationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
-                    LoanSchemeId = table.Column<int>(type: "int", nullable: false),
+                    LoanSchemeId = table.Column<int>(type: "int", nullable: true),
                     LoanOfficerId = table.Column<int>(type: "int", nullable: true),
                     ApplicationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
@@ -176,8 +173,7 @@ namespace Lending.Migrations
                         name: "FK_LoanApplications_LoanSchemes_LoanSchemeId",
                         column: x => x.LoanSchemeId,
                         principalTable: "LoanSchemes",
-                        principalColumn: "LoanSchemeId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "LoanSchemeId");
                 });
 
             migrationBuilder.CreateTable(
@@ -187,7 +183,7 @@ namespace Lending.Migrations
                     DocumentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
-                    LoanApplicationId = table.Column<int>(type: "int", nullable: false),
+                    LoanApplicationId = table.Column<int>(type: "int", nullable: true),
                     Type = table.Column<int>(type: "int", nullable: false),
                     Url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     IsVerified = table.Column<bool>(type: "bit", nullable: false),
@@ -208,7 +204,7 @@ namespace Lending.Migrations
                         column: x => x.LoanApplicationId,
                         principalTable: "LoanApplications",
                         principalColumn: "LoanApplicationId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -217,8 +213,8 @@ namespace Lending.Migrations
                 {
                     LoanId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
-                    LoanApplicationId = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: true),
+                    LoanApplicationId = table.Column<int>(type: "int", nullable: true),
                     PrincipalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     InterestRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TenureMonths = table.Column<int>(type: "int", nullable: false),
@@ -239,7 +235,7 @@ namespace Lending.Migrations
                         column: x => x.LoanApplicationId,
                         principalTable: "LoanApplications",
                         principalColumn: "LoanApplicationId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -248,7 +244,7 @@ namespace Lending.Migrations
                 {
                     NotificationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: true),
                     LoanApplicationId = table.Column<int>(type: "int", nullable: true),
                     Message = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     SentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -267,7 +263,8 @@ namespace Lending.Migrations
                         name: "FK_Notifications_LoanApplications_LoanApplicationId",
                         column: x => x.LoanApplicationId,
                         principalTable: "LoanApplications",
-                        principalColumn: "LoanApplicationId");
+                        principalColumn: "LoanApplicationId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -303,12 +300,12 @@ namespace Lending.Migrations
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserId", "Address", "CreatedAt", "IsActive", "PasswordHash", "Role", "UpdatedAt", "UserEmail", "UserName", "UserPhone" },
-                values: new object[] { 1, "Head Office", new DateTime(2025, 9, 17, 17, 16, 16, 192, DateTimeKind.Utc).AddTicks(878), true, "$2a$11$St5KF2ggQ2MZwVO20nPRNerrBRGg6aPLoI.2UlRCcen8XPUJ0ZiQ.", 0, null, "admin@lending.com", "Default Admin", "123-456-7890" });
+                values: new object[] { 1, "Head Office", new DateTime(2025, 9, 18, 7, 18, 58, 420, DateTimeKind.Utc).AddTicks(7197), true, "$2a$11$HQeqXgpReDZHeEGRJ5b3H.Gl2f2t8k6VjzBGWUk7rbztp0u96BmlS", 0, null, "admin@lending.com", "Default Admin", "123-456-7890" });
 
             migrationBuilder.InsertData(
                 table: "LoanAdmins",
-                columns: new[] { "UserId", "AdminDepartment", "AdminId" },
-                values: new object[] { 1, "Finance", 0 });
+                columns: new[] { "UserId", "AdminDepartment" },
+                values: new object[] { 1, "Finance" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Documents_CustomerId",
