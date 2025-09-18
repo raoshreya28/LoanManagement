@@ -110,6 +110,13 @@ namespace Lending
             // --- Build App ---
             var app = builder.Build();
 
+            // ✅ (Optional) Ensure DB is created (useful first time)
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.EnsureCreated(); // Creates database & tables if not exists
+            }
+
             // --- Middleware ---
             if (app.Environment.IsDevelopment())
             {

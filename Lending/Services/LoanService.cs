@@ -35,7 +35,7 @@ namespace Lending.Services
         {
             return await _context.Loans
                                  .Include(l => l.Customer)
-                                Include(l => l.LoanApplication)
+                                 .Include(l => l.LoanApplication)
                                  .ToListAsync();
         }
 
