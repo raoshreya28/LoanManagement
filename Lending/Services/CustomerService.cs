@@ -1,62 +1,54 @@
-﻿using Lending.Data;
-using Lending.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lending.Data;
+using Lending.Models;
+using Lending.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lending.Services
 {
     public class CustomerService : ICustomerService
     {
-        private readonly AppDbContext _context;
+        private readonly ICustomerRepository _customerRepository;
+        private readonly ILoanApplicationRepository _loanApplicationRepository;
 
-        public CustomerService(AppDbContext context)
+        public CustomerService(ICustomerRepository customerRepository, ILoanApplicationRepository loanApplicationRepository)
         {
-            _context = context;
+            _customerRepository = customerRepository;
+            _loanApplicationRepository = loanApplicationRepository;
         }
 
         public async Task<Customer> CreateAsync(Customer customer)
         {
-            await _context.Customers.AddAsync(customer);
-            await _context.SaveChangesAsync();
-            return customer;
+            return await _customerRepository.CreateAsync(customer);
         }
 
         public async Task<Customer> UpdateAsync(Customer customer)
         {
-            _context.Customers.Update(customer);
-            await _context.SaveChangesAsync();
-            return customer;
+            return await _customerRepository.EditAsync(customer);
         }
 
         public async Task DeleteAsync(int customerId)
         {
-            var customer = await _context.Customers.FindAsync(customerId);
-            if (customer != null)
-            {
-                _context.Customers.Remove(customer);
-                await _context.SaveChangesAsync();
-            }
+            await _customerRepository.DeleteAsync(customerId);
         }
 
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
-            return await _context.Customers.Include(c => c.LoanApplications).ToListAsync();
+            return await _customerRepository.GetAllAsync();
         }
 
         public async Task<Customer?> GetByIdAsync(int customerId)
         {
-            return await _context.Customers
-                                 .Include(c => c.LoanApplications)
-                                 .FirstOrDefaultAsync(c => c.UserId == customerId);
+            return await _customerRepository.GetByIdAsync(customerId);
         }
 
         public async Task<IEnumerable<LoanApplication>> GetLoanApplicationsAsync(int customerId)
         {
-            return await _context.LoanApplications
-                                 .Where(l => l.CustomerId == customerId)
-                                 .ToListAsync();
+            // Note: This method directly accesses the repository to get applications,
+            // which is fine as it's a specific business query.
+            return await _loanApplicationRepository.GetAllAsync();
         }
     }
 }

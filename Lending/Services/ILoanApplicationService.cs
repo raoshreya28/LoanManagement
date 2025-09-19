@@ -14,6 +14,5 @@ namespace Lending.Services
         Task<IEnumerable<LoanApplication>> GetPendingApplicationsAsync();
         Task ApproveLoanAsync(int applicationId);
         Task RejectLoanAsync(int applicationId, string remarks);
-        Task AutoAssignOfficerAsync(LoanApplication application); // Auto-assign logic
     }
 }

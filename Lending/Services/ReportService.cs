@@ -1,5 +1,6 @@
 ﻿using Lending.Data;
 using Lending.Models;
+using Lending.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,41 +11,44 @@ namespace Lending.Services
 {
     public class ReportService : IReportService
     {
-        private readonly AppDbContext _context;
+        private readonly IReportRepository _reportRepository;
+        private readonly ILoanRepository _loanRepository;
+        private readonly ILoanAdminRepository _loanAdminRepository;
 
-        public ReportService(AppDbContext context)
+        public ReportService(IReportRepository reportRepository, ILoanRepository loanRepository, ILoanAdminRepository loanAdminRepository)
         {
-            _context = context;
+            _reportRepository = reportRepository;
+            _loanRepository = loanRepository;
+            _loanAdminRepository = loanAdminRepository;
         }
 
         public async Task<Report> GenerateReportAsync(ReportType type)
         {
+            // Note: This is a placeholder for the actual report generation logic (e.g., using a reporting library).
+            // For now, it just creates a record of the report. The actual data extraction would happen here.
             var report = new Report
             {
                 Type = type,
                 Title = $"{type} Report - {DateTime.UtcNow:dd/MM/yyyy}",
+                // In a real application, you would generate a file and save its path
                 Url = $"Reports/{type}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf",
-                GeneratedAt = DateTime.UtcNow
+                GeneratedAt = DateTime.UtcNow,
+                // The correct foreign key property to use.
+                // Assuming a LoanAdmin is generating the report
+                GeneratedById = 1 // Placeholder for a real user ID
             };
 
-            await _context.Reports.AddAsync(report);
-            await _context.SaveChangesAsync();
-
-            return report;
+            return await _reportRepository.CreateAsync(report);
         }
 
         public async Task<IEnumerable<Report>> GetAllReportsAsync()
         {
-            return await _context.Reports
-                                 .Include(r => r.GeneratedBy)
-                                 .ToListAsync();
+            return await _reportRepository.GetAllAsync();
         }
 
         public async Task<Report?> GetByIdAsync(int reportId)
         {
-            return await _context.Reports
-                                 .Include(r => r.GeneratedBy)
-                                 .FirstOrDefaultAsync(r => r.ReportId == reportId);
+            return await _reportRepository.GetByIdAsync(reportId);
         }
     }
 }

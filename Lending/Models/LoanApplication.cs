@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
-    public enum LoanStatus { PENDING, APPROVED, REJECTED }
+    public enum LoanStatus { PENDING, APPROVED, REJECTED, CLOSED }
 
     public class LoanApplication
     {
@@ -39,14 +39,11 @@ namespace Lending.Models
         [Range(0, 100, ErrorMessage = "Interest rate must be between 0 and 100%")]
         public decimal InterestRate { get; set; }
 
-        [StringLength(1000)]
-        public string DocumentUrls { get; set; }
-
         [StringLength(500)]
         public string Remarks { get; set; }
 
-        public ICollection<Repayment>? Repayments { get; set; }
-
         public ICollection<Document>? Documents { get; set; }
+
+        public Loan? Loan { get; set; }
     }
 }

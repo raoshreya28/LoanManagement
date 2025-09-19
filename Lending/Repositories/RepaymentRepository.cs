@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lending.Data;
+﻿using Lending.Data;
 using Lending.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lending.Repositories
 {
@@ -17,15 +16,13 @@ namespace Lending.Repositories
 
         public async Task<IEnumerable<Repayment>> GetAllAsync()
         {
-            return await _context.Repayments
-                                 .Include(r => r.LoanApplication)
-                                 .ToListAsync();
+            return await _context.Repayments.ToListAsync();
         }
 
         public async Task<Repayment?> GetByIdAsync(int id)
         {
             return await _context.Repayments
-                                 .Include(r => r.LoanApplication)
+                                 .Include(r => r.Loan)
                                  .FirstOrDefaultAsync(r => r.RepaymentId == id);
         }
 
@@ -51,6 +48,15 @@ namespace Lending.Repositories
                 _context.Repayments.Remove(existing);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<Repayment>> GetRepaymentsWithLoanAndCustomerAsync()
+        {
+            return await _context.Repayments
+                                 .Include(r => r.Loan)
+                                     .ThenInclude(l => l.LoanApplication)
+                                         .ThenInclude(la => la.Customer)
+                                 .ToListAsync();
         }
     }
 }

@@ -12,8 +12,8 @@ namespace Lending.Models
         public int RepaymentId { get; set; }
 
         [Required]
-        public int? LoanApplicationId { get; set; }
-        public LoanApplication? LoanApplication { get; set; }
+        public int LoanId { get; set; }
+        public Loan Loan { get; set; }
 
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "Amount due must be positive")]

@@ -18,6 +18,7 @@ namespace Lending.Repositories
         {
             return await _context.Customers
                                  .Include(c => c.LoanApplications)
+                                 .Include(c => c.Documents) // Added this line
                                  .ToListAsync();
         }
 
@@ -25,6 +26,7 @@ namespace Lending.Repositories
         {
             return await _context.Customers
                                  .Include(c => c.LoanApplications)
+                                 .Include(c => c.Documents) // Added this line
                                  .FirstOrDefaultAsync(c => c.UserId == id);
         }
 

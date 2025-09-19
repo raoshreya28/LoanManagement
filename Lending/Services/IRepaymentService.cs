@@ -10,7 +10,7 @@ namespace Lending.Services
         Task<Repayment> UpdateAsync(Repayment repayment);
         Task<IEnumerable<Repayment>> GetAllAsync();
         Task<Repayment?> GetByIdAsync(int repaymentId);
-        Task<IEnumerable<Repayment>> GetRepaymentsByLoanAsync(int loanApplicationId);
+        Task<IEnumerable<Repayment>> GetRepaymentsByLoanAsync(int loanId);
         Task MarkAsPaidAsync(int repaymentId);
         Task<IEnumerable<Repayment>> GetOverdueRepaymentsAsync();
     }

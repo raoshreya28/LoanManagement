@@ -20,7 +20,6 @@ namespace Lending.Repositories
                                  .Include(la => la.Customer)
                                  .Include(la => la.LoanScheme)
                                  .Include(la => la.LoanOfficer)
-                                 .Include(la => la.Repayments)
                                  .ToListAsync();
         }
 
@@ -30,7 +29,6 @@ namespace Lending.Repositories
                                  .Include(la => la.Customer)
                                  .Include(la => la.LoanScheme)
                                  .Include(la => la.LoanOfficer)
-                                 .Include(la => la.Repayments)
                                  .FirstOrDefaultAsync(la => la.LoanApplicationId == id);
         }
 

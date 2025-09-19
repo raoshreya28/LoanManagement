@@ -152,7 +152,6 @@ namespace Lending.Migrations
                     AppliedAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TenureMonths = table.Column<int>(type: "int", nullable: false),
                     InterestRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DocumentUrls = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     Remarks = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
@@ -213,29 +212,33 @@ namespace Lending.Migrations
                 {
                     LoanId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: true),
-                    LoanApplicationId = table.Column<int>(type: "int", nullable: true),
-                    PrincipalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    InterestRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TenureMonths = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    LoanApplicationId = table.Column<int>(type: "int", nullable: false),
+                    ApprovedAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    LoanOfficerId = table.Column<int>(type: "int", nullable: false),
+                    DisbursementDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    LoanApplicationId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Loans", x => x.LoanId);
-                    table.ForeignKey(
-                        name: "FK_Loans_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Loans_LoanApplications_LoanApplicationId",
                         column: x => x.LoanApplicationId,
                         principalTable: "LoanApplications",
                         principalColumn: "LoanApplicationId",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Loans_LoanApplications_LoanApplicationId1",
+                        column: x => x.LoanApplicationId1,
+                        principalTable: "LoanApplications",
+                        principalColumn: "LoanApplicationId");
+                    table.ForeignKey(
+                        name: "FK_Loans_LoanOfficers_LoanOfficerId",
+                        column: x => x.LoanOfficerId,
+                        principalTable: "LoanOfficers",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -273,34 +276,28 @@ namespace Lending.Migrations
                 {
                     RepaymentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LoanApplicationId = table.Column<int>(type: "int", nullable: false),
+                    LoanId = table.Column<int>(type: "int", nullable: false),
                     AmountDue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     AmountPaid = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PaidDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    LoanId = table.Column<int>(type: "int", nullable: true)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Repayments", x => x.RepaymentId);
                     table.ForeignKey(
-                        name: "FK_Repayments_LoanApplications_LoanApplicationId",
-                        column: x => x.LoanApplicationId,
-                        principalTable: "LoanApplications",
-                        principalColumn: "LoanApplicationId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Repayments_Loans_LoanId",
                         column: x => x.LoanId,
                         principalTable: "Loans",
-                        principalColumn: "LoanId");
+                        principalColumn: "LoanId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserId", "Address", "CreatedAt", "IsActive", "PasswordHash", "Role", "UpdatedAt", "UserEmail", "UserName", "UserPhone" },
-                values: new object[] { 1, "Head Office", new DateTime(2025, 9, 18, 7, 18, 58, 420, DateTimeKind.Utc).AddTicks(7197), true, "$2a$11$HQeqXgpReDZHeEGRJ5b3H.Gl2f2t8k6VjzBGWUk7rbztp0u96BmlS", 0, null, "admin@lending.com", "Default Admin", "123-456-7890" });
+                values: new object[] { 1, "Head Office", new DateTime(2025, 9, 19, 18, 1, 25, 265, DateTimeKind.Utc).AddTicks(1040), true, "$2a$11$.wCIvwAWAUufkdFjFW7yRuB.0OlflhWjBp/VHmOaxGUmYfVb49Tg.", 0, null, "admin@lending.com", "Default Admin", "123-456-7890" });
 
             migrationBuilder.InsertData(
                 table: "LoanAdmins",
@@ -333,14 +330,22 @@ namespace Lending.Migrations
                 column: "LoanSchemeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Loans_CustomerId",
-                table: "Loans",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Loans_LoanApplicationId",
                 table: "Loans",
-                column: "LoanApplicationId");
+                column: "LoanApplicationId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Loans_LoanApplicationId1",
+                table: "Loans",
+                column: "LoanApplicationId1",
+                unique: true,
+                filter: "[LoanApplicationId1] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Loans_LoanOfficerId",
+                table: "Loans",
+                column: "LoanOfficerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_CustomerId",
@@ -350,11 +355,6 @@ namespace Lending.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_LoanApplicationId",
                 table: "Notifications",
-                column: "LoanApplicationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Repayments_LoanApplicationId",
-                table: "Repayments",
                 column: "LoanApplicationId");
 
             migrationBuilder.CreateIndex(

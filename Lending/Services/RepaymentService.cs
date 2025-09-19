@@ -1,5 +1,6 @@
 ﻿using Lending.Data;
 using Lending.Models;
+using Lending.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,65 +11,63 @@ namespace Lending.Services
 {
     public class RepaymentService : IRepaymentService
     {
-        private readonly AppDbContext _context;
+        private readonly IRepaymentRepository _repaymentRepository;
+        private readonly ILoanRepository _loanRepository;
 
-        public RepaymentService(AppDbContext context)
+        public RepaymentService(IRepaymentRepository repaymentRepository, ILoanRepository loanRepository)
         {
-            _context = context;
+            _repaymentRepository = repaymentRepository;
+            _loanRepository = loanRepository;
         }
 
         public async Task<Repayment> CreateAsync(Repayment repayment)
         {
-            await _context.Repayments.AddAsync(repayment);
-            await _context.SaveChangesAsync();
-            return repayment;
+            return await _repaymentRepository.CreateAsync(repayment);
         }
 
         public async Task<Repayment> UpdateAsync(Repayment repayment)
         {
-            _context.Repayments.Update(repayment);
-            await _context.SaveChangesAsync();
-            return repayment;
+            return await _repaymentRepository.EditAsync(repayment);
         }
 
         public async Task<IEnumerable<Repayment>> GetAllAsync()
         {
-            return await _context.Repayments
-                                 .Include(r => r.LoanApplication)
-                                 .ToListAsync();
+            return await _repaymentRepository.GetAllAsync();
         }
 
         public async Task<Repayment?> GetByIdAsync(int repaymentId)
         {
-            return await _context.Repayments
-                                 .Include(r => r.LoanApplication)
-                                 .FirstOrDefaultAsync(r => r.RepaymentId == repaymentId);
+            return await _repaymentRepository.GetByIdAsync(repaymentId);
         }
 
-        public async Task<IEnumerable<Repayment>> GetRepaymentsByLoanAsync(int loanApplicationId)
+        public async Task<IEnumerable<Repayment>> GetRepaymentsByLoanAsync(int loanId)
         {
-            return await _context.Repayments
-                                 .Where(r => r.LoanApplicationId == loanApplicationId)
-                                 .ToListAsync();
+            var allRepayments = await _repaymentRepository.GetAllAsync();
+            return allRepayments.Where(r => r.LoanId == loanId);
         }
 
         public async Task MarkAsPaidAsync(int repaymentId)
         {
-            var repayment = await _context.Repayments.FindAsync(repaymentId);
+            var repayment = await _repaymentRepository.GetByIdAsync(repaymentId);
             if (repayment != null)
             {
                 repayment.Status = RepaymentStatus.PAID;
                 repayment.PaidDate = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                await _repaymentRepository.EditAsync(repayment);
+
+                var loan = await _loanRepository.GetByIdAsync(repayment.LoanId);
+                if (loan != null && loan.Repayments.All(r => r.Status == RepaymentStatus.PAID))
+                {
+                    loan.Status = LoanStatus.CLOSED;
+                    await _loanRepository.EditAsync(loan);
+                }
             }
         }
 
         public async Task<IEnumerable<Repayment>> GetOverdueRepaymentsAsync()
         {
-            var today = DateTime.UtcNow;
-            return await _context.Repayments
-                                 .Where(r => r.Status == RepaymentStatus.PENDING && r.DueDate < today)
-                                 .ToListAsync();
+            var allRepayments = await _repaymentRepository.GetAllAsync();
+            return allRepayments.Where(r => r.Status == RepaymentStatus.PENDING && r.DueDate < DateTime.UtcNow);
         }
     }
 }
