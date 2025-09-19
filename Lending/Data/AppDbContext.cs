@@ -1,5 +1,6 @@
 ﻿using Lending.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Lending.Data
 {
@@ -23,53 +24,48 @@ namespace Lending.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Map abstract base class User to table Users
+            // Table-Per-Type (TPT) Inheritance mapping for User and its derived classes
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Customer>().ToTable("Customers");
             modelBuilder.Entity<LoanAdmin>().ToTable("LoanAdmins");
             modelBuilder.Entity<LoanOfficer>().ToTable("LoanOfficers");
 
-            // CUSTOMER → LOANAPPLICATION (Cascade allowed)
+            // --- Define Relationships ---
+
+            // CUSTOMER → LOANAPPLICATION (Cascade on Customer deletion)
             modelBuilder.Entity<LoanApplication>()
                 .HasOne(l => l.Customer)
                 .WithMany(c => c.LoanApplications)
                 .HasForeignKey(l => l.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // CUSTOMER → DOCUMENTS (Cascade allowed)
+            // CUSTOMER → DOCUMENTS (Cascade on Customer deletion)
             modelBuilder.Entity<Document>()
                 .HasOne(d => d.Customer)
                 .WithMany(c => c.Documents)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // LOANAPPLICATION → DOCUMENTS (Restrict to avoid multiple cascade paths)
+            // LOANAPPLICATION → DOCUMENTS (Restrict to prevent multiple cascade paths)
             modelBuilder.Entity<Document>()
                 .HasOne(d => d.LoanApplication)
                 .WithMany(l => l.Documents)
                 .HasForeignKey(d => d.LoanApplicationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // LOANAPPLICATION → REPAYMENTS (Cascade allowed)
-            modelBuilder.Entity<Repayment>()
-                .HasOne(r => r.LoanApplication)
-                .WithMany(l => l.Repayments)
-                .HasForeignKey(r => r.LoanApplicationId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // LOAN → CUSTOMER (Cascade allowed)
-            modelBuilder.Entity<Loan>()
-                .HasOne(l => l.Customer)
-                .WithMany()
-                .HasForeignKey(l => l.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // LOAN → LOANAPPLICATION (Restrict to avoid double cascade)
+            // LOANAPPLICATION → LOAN (One-to-one, Restrict)
             modelBuilder.Entity<Loan>()
                 .HasOne(l => l.LoanApplication)
-                .WithMany()
-                .HasForeignKey(l => l.LoanApplicationId)
+                .WithOne()
+                .HasForeignKey<Loan>(l => l.LoanApplicationId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // LOAN → REPAYMENTS (Cascade on Loan deletion)
+            modelBuilder.Entity<Repayment>()
+                .HasOne(r => r.Loan)
+                .WithMany(l => l.Repayments)
+                .HasForeignKey(r => r.LoanId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // NOTIFICATION → CUSTOMER (Cascade allowed)
             modelBuilder.Entity<Notification>()
@@ -92,7 +88,7 @@ namespace Lending.Data
                 .HasForeignKey(r => r.GeneratedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Seed default LoanAdmin
+            // --- Seed default LoanAdmin ---
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
             modelBuilder.Entity<LoanAdmin>().HasData(new LoanAdmin
             {

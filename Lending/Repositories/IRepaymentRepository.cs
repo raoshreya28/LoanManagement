@@ -11,5 +11,6 @@ namespace Lending.Repositories
         Task DeleteAsync(int id);
         Task<IEnumerable<Repayment>> GetAllAsync();
         Task<Repayment?> GetByIdAsync(int id);
+        Task<IEnumerable<Repayment>> GetRepaymentsWithLoanAndCustomerAsync();
     }
 }

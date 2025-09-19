@@ -70,32 +70,34 @@ namespace Lending.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoanId"));
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("InterestRate")
+                    b.Property<decimal>("ApprovedAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("LoanApplicationId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PrincipalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("StartDate")
+                    b.Property<DateTime>("DisbursementDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("TenureMonths")
+                    b.Property<int>("LoanApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LoanApplicationId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LoanOfficerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("LoanId");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("LoanApplicationId")
+                        .IsUnique();
 
-                    b.HasIndex("LoanApplicationId");
+                    b.HasIndex("LoanApplicationId1")
+                        .IsUnique()
+                        .HasFilter("[LoanApplicationId1] IS NOT NULL");
+
+                    b.HasIndex("LoanOfficerId");
 
                     b.ToTable("Loans");
                 });
@@ -116,11 +118,6 @@ namespace Lending.Migrations
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
-
-                    b.Property<string>("DocumentUrls")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<decimal>("InterestRate")
                         .HasColumnType("decimal(18,2)");
@@ -245,11 +242,7 @@ namespace Lending.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("LoanApplicationId")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<int?>("LoanId")
+                    b.Property<int>("LoanId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("PaidDate")
@@ -259,8 +252,6 @@ namespace Lending.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("RepaymentId");
-
-                    b.HasIndex("LoanApplicationId");
 
                     b.HasIndex("LoanId");
 
@@ -407,9 +398,9 @@ namespace Lending.Migrations
                         {
                             UserId = 1,
                             Address = "Head Office",
-                            CreatedAt = new DateTime(2025, 9, 18, 7, 18, 58, 420, DateTimeKind.Utc).AddTicks(7197),
+                            CreatedAt = new DateTime(2025, 9, 19, 18, 1, 25, 265, DateTimeKind.Utc).AddTicks(1040),
                             IsActive = true,
-                            PasswordHash = "$2a$11$HQeqXgpReDZHeEGRJ5b3H.Gl2f2t8k6VjzBGWUk7rbztp0u96BmlS",
+                            PasswordHash = "$2a$11$.wCIvwAWAUufkdFjFW7yRuB.0OlflhWjBp/VHmOaxGUmYfVb49Tg.",
                             Role = 0,
                             UserEmail = "admin@lending.com",
                             UserName = "Default Admin",
@@ -461,19 +452,25 @@ namespace Lending.Migrations
 
             modelBuilder.Entity("Lending.Models.Loan", b =>
                 {
-                    b.HasOne("Lending.Models.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Lending.Models.LoanApplication", "LoanApplication")
-                        .WithMany()
-                        .HasForeignKey("LoanApplicationId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithOne()
+                        .HasForeignKey("Lending.Models.Loan", "LoanApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.HasOne("Lending.Models.LoanApplication", null)
+                        .WithOne("Loan")
+                        .HasForeignKey("Lending.Models.Loan", "LoanApplicationId1");
+
+                    b.HasOne("Lending.Models.LoanOfficer", "LoanOfficer")
+                        .WithMany()
+                        .HasForeignKey("LoanOfficerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("LoanApplication");
+
+                    b.Navigation("LoanOfficer");
                 });
 
             modelBuilder.Entity("Lending.Models.LoanApplication", b =>
@@ -518,17 +515,13 @@ namespace Lending.Migrations
 
             modelBuilder.Entity("Lending.Models.Repayment", b =>
                 {
-                    b.HasOne("Lending.Models.LoanApplication", "LoanApplication")
+                    b.HasOne("Lending.Models.Loan", "Loan")
                         .WithMany("Repayments")
-                        .HasForeignKey("LoanApplicationId")
+                        .HasForeignKey("LoanId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Lending.Models.Loan", null)
-                        .WithMany("Repayments")
-                        .HasForeignKey("LoanId");
-
-                    b.Navigation("LoanApplication");
+                    b.Navigation("Loan");
                 });
 
             modelBuilder.Entity("Lending.Models.Report", b =>
@@ -577,7 +570,7 @@ namespace Lending.Migrations
                 {
                     b.Navigation("Documents");
 
-                    b.Navigation("Repayments");
+                    b.Navigation("Loan");
                 });
 
             modelBuilder.Entity("Lending.Models.LoanScheme", b =>

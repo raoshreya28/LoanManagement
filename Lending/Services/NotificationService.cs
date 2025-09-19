@@ -1,5 +1,6 @@
 ﻿using Lending.Data;
 using Lending.Models;
+using Lending.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,63 +11,58 @@ namespace Lending.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly AppDbContext _context;
+        private readonly INotificationRepository _notificationRepository;
+        private readonly IRepaymentRepository _repaymentRepository;
 
-        public NotificationService(AppDbContext context)
+        public NotificationService(INotificationRepository notificationRepository, IRepaymentRepository repaymentRepository)
         {
-            _context = context;
+            _notificationRepository = notificationRepository;
+            _repaymentRepository = repaymentRepository;
         }
 
         public async Task<Notification> SendNotificationAsync(Notification notification)
         {
             notification.SentDate = DateTime.UtcNow;
             notification.Status = NotificationStatus.Sent;
-            await _context.Notifications.AddAsync(notification);
-            await _context.SaveChangesAsync();
-            return notification;
+            return await _notificationRepository.CreateAsync(notification);
         }
 
         public async Task<IEnumerable<Notification>> GetNotificationsByCustomerAsync(int customerId)
         {
-            return await _context.Notifications
-                                 .Where(n => n.CustomerId == customerId)
-                                 .ToListAsync();
+            var allNotifications = await _notificationRepository.GetAllAsync();
+            return allNotifications.Where(n => n.CustomerId == customerId);
         }
 
         public async Task<IEnumerable<Notification>> GetPendingNotificationsAsync()
         {
-            return await _context.Notifications
-                                 .Where(n => n.Status == NotificationStatus.Failed)
-                                 .ToListAsync();
+            var allNotifications = await _notificationRepository.GetAllAsync();
+            return allNotifications.Where(n => n.Status == NotificationStatus.Failed);
         }
 
-        // Sends reminders 7 days before due date
         public async Task SendRepaymentReminderAsync()
         {
             var today = DateTime.UtcNow;
-            var reminderDate = today.AddDays(7);
+            var reminderDate = today.AddDays(7).Date;
 
-            var repayments = await _context.Repayments
-                                           .Include(r => r.LoanApplication)
-                                           .ThenInclude(l => l.Customer)
-                                           .Where(r => r.DueDate.Date == reminderDate.Date && r.Status == RepaymentStatus.PENDING)
-                                           .ToListAsync();
+            var repayments = await _repaymentRepository.GetRepaymentsWithLoanAndCustomerAsync();
 
-            foreach (var r in repayments)
+            var remindersToSend = repayments
+                .Where(r => r.DueDate.Date == reminderDate && r.Status == RepaymentStatus.PENDING)
+                .ToList();
+
+            foreach (var r in remindersToSend)
             {
                 var notification = new Notification
                 {
-                    CustomerId = r.LoanApplication.CustomerId,
-                    LoanApplicationId = r.LoanApplicationId,
+                    CustomerId = r.Loan.LoanApplication.CustomerId,
+                    LoanApplicationId = r.Loan.LoanApplicationId,
                     Message = $"Your loan installment of {r.AmountDue:C} is due on {r.DueDate:dd/MM/yyyy}. Please ensure timely payment.",
                     SentDate = DateTime.UtcNow,
                     Status = NotificationStatus.Sent
                 };
 
-                await _context.Notifications.AddAsync(notification);
+                await _notificationRepository.CreateAsync(notification);
             }
-
-            await _context.SaveChangesAsync();
         }
     }
 }

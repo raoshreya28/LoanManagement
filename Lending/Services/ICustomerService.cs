@@ -1,4 +1,6 @@
 ﻿using Lending.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lending.Services
 {
