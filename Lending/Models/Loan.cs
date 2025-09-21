@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Lending.Models
@@ -9,33 +11,22 @@ namespace Lending.Models
         public int LoanId { get; set; }
 
         [Required]
-        public int? CustomerId { get; set; }
-        public virtual Customer? Customer { get; set; }
+        public int LoanApplicationId { get; set; }
+        public LoanApplication LoanApplication { get; set; }
 
         [Required]
-        public int? LoanApplicationId { get; set; }
-        public virtual LoanApplication? LoanApplication { get; set; }
+        public decimal ApprovedAmount { get; set; }
 
         [Required]
-        [Range(0, double.MaxValue)]
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal PrincipalAmount { get; set; }
+        public int LoanOfficerId { get; set; }
+        public LoanOfficer LoanOfficer { get; set; }
 
         [Required]
-        [Range(0, 100)]
-        public decimal InterestRate { get; set; }
+        public DateTime DisbursementDate { get; set; }
 
         [Required]
-        [Range(1, 600)]
-        public int TenureMonths { get; set; }
+        public LoanStatus Status { get; set; } = LoanStatus.APPROVED;
 
-        [Required]
-        public DateTime StartDate { get; set; }
-
-        [Required]
-        public DateTime EndDate { get; set; }
-
-        // Navigation property
         public ICollection<Repayment>? Repayments { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace Lending.Services
 {
     public interface IReportService
     {
-        Task<Report> GenerateReportAsync(ReportType type);
+        Task<Report> GenerateReportAsync(ReportType type, int generatedById);
         Task<IEnumerable<Report>> GetAllReportsAsync();
         Task<Report?> GetByIdAsync(int reportId);
     }

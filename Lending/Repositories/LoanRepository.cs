@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lending.Data;
+﻿using Lending.Data;
 using Lending.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lending.Repositories
 {
@@ -13,24 +13,6 @@ namespace Lending.Repositories
         public LoanRepository(AppDbContext context)
         {
             _context = context;
-        }
-
-        public async Task<IEnumerable<Loan>> GetAllAsync()
-        {
-            return await _context.Loans
-                                 .Include(l => l.Customer)
-                                 .Include(l => l.LoanApplication)
-                                 .Include(l => l.Repayments)
-                                 .ToListAsync();
-        }
-
-        public async Task<Loan?> GetByIdAsync(int id)
-        {
-            return await _context.Loans
-                                 .Include(l => l.Customer)
-                                 .Include(l => l.LoanApplication)
-                                 .Include(l => l.Repayments)
-                                 .FirstOrDefaultAsync(l => l.LoanId == id);
         }
 
         public async Task<Loan> CreateAsync(Loan loan)
@@ -47,14 +29,32 @@ namespace Lending.Repositories
             return loan;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int loanId)
         {
-            var existing = await _context.Loans.FirstOrDefaultAsync(l => l.LoanId == id);
-            if (existing != null)
+            var loan = await _context.Loans.FindAsync(loanId);
+            if (loan != null)
             {
-                _context.Loans.Remove(existing);
+                _context.Loans.Remove(loan);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<Loan>> GetAllAsync()
+        {
+            return await _context.Loans
+                                 .Include(l => l.Repayments)
+                                 .Include(l => l.LoanApplication)
+                                     .ThenInclude(la => la.Customer)
+                                 .ToListAsync();
+        }
+
+        public async Task<Loan?> GetByIdAsync(int loanId)
+        {
+            return await _context.Loans
+                                 .Include(l => l.Repayments)
+                                 .Include(l => l.LoanApplication)
+                                     .ThenInclude(la => la.Customer)
+                                 .FirstOrDefaultAsync(l => l.LoanId == loanId);
         }
     }
 }

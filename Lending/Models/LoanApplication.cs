@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Lending.Models
 {
-    public enum LoanStatus
-    { PENDING, APPROVED, REJECTED }
+    public enum LoanStatus { PENDING, APPROVED, REJECTED, CLOSED }
 
     public class LoanApplication
     {
@@ -14,12 +15,11 @@ namespace Lending.Models
         public int CustomerId { get; set; }
         public Customer Customer { get; set; }
 
-        [Required]
         public int? LoanSchemeId { get; set; }
-        public virtual LoanScheme? LoanScheme { get; set; }
+        public LoanScheme? LoanScheme { get; set; }
 
-        public int? LoanOfficerId { get; set; } // Auto-assigned
-        public virtual LoanOfficer? LoanOfficer { get; set; }
+        public int? LoanOfficerId { get; set; }
+        public LoanOfficer? LoanOfficer { get; set; }
 
         [Required]
         public DateTime ApplicationDate { get; set; } = DateTime.UtcNow;
@@ -37,18 +37,13 @@ namespace Lending.Models
 
         [Required]
         [Range(0, 100, ErrorMessage = "Interest rate must be between 0 and 100%")]
-        public decimal InterestRate { get; set; } // Copied from LoanScheme
-
-        [StringLength(1000)]
-        public string DocumentUrls { get; set; } // Could be comma-separated or JSON
+        public decimal InterestRate { get; set; }
 
         [StringLength(500)]
         public string Remarks { get; set; }
 
-        // Navigation property for repayments
-        public ICollection<Repayment>? Repayments { get; set; }
-
         public ICollection<Document>? Documents { get; set; }
 
+        public Loan? Loan { get; set; }
     }
 }

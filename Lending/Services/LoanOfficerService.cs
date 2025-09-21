@@ -4,88 +4,78 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lending.Repositories;
 
 namespace Lending.Services
 {
     public class LoanOfficerService : ILoanOfficerService
     {
-        private readonly AppDbContext _context;
+        private readonly ILoanOfficerRepository _loanOfficerRepository;
+        private readonly ICustomerRepository _customerRepository;
 
-        public LoanOfficerService(AppDbContext context)
+        public LoanOfficerService(ILoanOfficerRepository loanOfficerRepository, ICustomerRepository customerRepository)
         {
-            _context = context;
+            _loanOfficerRepository = loanOfficerRepository;
+            _customerRepository = customerRepository;
         }
 
         public async Task<LoanOfficer> CreateAsync(LoanOfficer officer)
         {
-            await _context.LoanOfficers.AddAsync(officer);
-            await _context.SaveChangesAsync();
-            return officer;
+            return await _loanOfficerRepository.CreateAsync(officer);
         }
 
         public async Task<LoanOfficer> UpdateAsync(LoanOfficer officer)
         {
-            _context.LoanOfficers.Update(officer);
-            await _context.SaveChangesAsync();
-            return officer;
+            return await _loanOfficerRepository.EditAsync(officer);
         }
 
         public async Task DeleteAsync(int officerId)
         {
-            var officer = await _context.LoanOfficers.FindAsync(officerId);
-            if (officer != null)
-            {
-                _context.LoanOfficers.Remove(officer);
-                await _context.SaveChangesAsync();
-            }
+            await _loanOfficerRepository.DeleteAsync(officerId);
         }
 
         public async Task<IEnumerable<LoanOfficer>> GetAllAsync()
         {
-            return await _context.LoanOfficers.ToListAsync();
+            return await _loanOfficerRepository.GetAllAsync();
         }
 
         public async Task<LoanOfficer?> GetByIdAsync(int officerId)
         {
-            return await _context.LoanOfficers.FindAsync(officerId);
+            return await _loanOfficerRepository.GetByIdAsync(officerId);
         }
 
         // ✅ Auto-assign logic
         public async Task<LoanOfficer?> AssignLoanAsync(LoanApplication application)
         {
-            if (application.Customer == null)
+            var customer = await _customerRepository.GetByIdAsync(application.CustomerId);
+            if (customer == null)
             {
-                // Load customer info if not included
-                application.Customer = await _context.Customers.FindAsync(application.CustomerId);
+                // Handle case where customer does not exist, though it shouldn't happen with proper foreign keys.
+                return null;
             }
 
-            // Find officers in the same city who are available
-            var availableOfficers = await _context.LoanOfficers
-                .Where(o => o.LoanOfficerCity == application.Customer.CustomerCity && o.IsAvailable)
-                .OrderBy(o => o.CurrentAssignments)
-                .ToListAsync();
+            // Find officers in the same city with the fewest current assignments
+            var availableOfficers = await _loanOfficerRepository.GetAllAsync();
 
-            var assignedOfficer = availableOfficers.FirstOrDefault();
+            var assignedOfficer = availableOfficers
+                .Where(o => o.LoanOfficerCity == customer.CustomerCity && o.IsAvailable)
+                .OrderBy(o => o.CurrentAssignments)
+                .FirstOrDefault();
 
             if (assignedOfficer != null)
             {
                 // Assign the loan
                 assignedOfficer.CurrentAssignments += 1;
 
-                // If officer reaches max assignment (optional), mark as unavailable
-                if (assignedOfficer.CurrentAssignments >= 10) // example limit
+                // Update the officer's availability if a certain threshold is reached
+                if (assignedOfficer.CurrentAssignments >= 10) // example limit from previous comment
                     assignedOfficer.IsAvailable = false;
 
-                // Save officer changes
-                _context.LoanOfficers.Update(assignedOfficer);
+                await _loanOfficerRepository.EditAsync(assignedOfficer);
 
-                // Update application
-                application.LoanOfficerId = assignedOfficer.LoanOfficerId;
-                _context.LoanApplications.Update(application);
-
-                await _context.SaveChangesAsync();
+                // Update the application with the assigned officer's ID
+                application.LoanOfficerId = assignedOfficer.UserId;
             }
-
             return assignedOfficer;
         }
     }

@@ -14,3 +14,5 @@ namespace Lending.Services
         Task<IEnumerable<Loan>> GetNPALoansAsync(); // NPA logic
     }
 }
+
+

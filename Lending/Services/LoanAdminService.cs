@@ -1,52 +1,43 @@
 ﻿using Lending.Data;
 using Lending.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Lending.Repositories;
 
 namespace Lending.Services
 {
     public class LoanAdminService : ILoanAdminService
     {
-        private readonly AppDbContext _context;
+        private readonly ILoanAdminRepository _loanAdminRepository;
 
-        public LoanAdminService(AppDbContext context)
+        public LoanAdminService(ILoanAdminRepository loanAdminRepository)
         {
-            _context = context;
+            _loanAdminRepository = loanAdminRepository;
         }
 
         public async Task<LoanAdmin> CreateAsync(LoanAdmin admin)
         {
-            await _context.LoanAdmins.AddAsync(admin);
-            await _context.SaveChangesAsync();
-            return admin;
+            return await _loanAdminRepository.CreateAsync(admin);
         }
 
         public async Task<LoanAdmin> UpdateAsync(LoanAdmin admin)
         {
-            _context.LoanAdmins.Update(admin);
-            await _context.SaveChangesAsync();
-            return admin;
+            return await _loanAdminRepository.EditAsync(admin);
         }
 
         public async Task DeleteAsync(int adminId)
         {
-            var admin = await _context.LoanAdmins.FindAsync(adminId);
-            if (admin != null)
-            {
-                _context.LoanAdmins.Remove(admin);
-                await _context.SaveChangesAsync();
-            }
+            await _loanAdminRepository.DeleteAsync(adminId);
         }
 
         public async Task<IEnumerable<LoanAdmin>> GetAllAsync()
         {
-            return await _context.LoanAdmins.ToListAsync();
+            return await _loanAdminRepository.GetAllAsync();
         }
 
         public async Task<LoanAdmin?> GetByIdAsync(int adminId)
         {
-            return await _context.LoanAdmins.FindAsync(adminId);
+            return await _loanAdminRepository.GetByIdAsync(adminId);
         }
     }
 }

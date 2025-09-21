@@ -6,8 +6,9 @@ namespace Lending.Services
 {
     public interface INotificationService
     {
-        Task<Notification> SendNotificationAsync(Notification notification);
-        Task<IEnumerable<Notification>> GetNotificationsByCustomerAsync(int customerId);
+        Task<Notification> CreateAsync(Notification notification);
+        Task<IEnumerable<Notification>> GetNotificationsByUserAsync(int userId);
+        Task<bool> MarkAsReadAsync(int notificationId);
         Task<IEnumerable<Notification>> GetPendingNotificationsAsync();
         Task SendRepaymentReminderAsync();
     }

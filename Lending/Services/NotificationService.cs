@@ -1,6 +1,5 @@
-﻿using Lending.Data;
-using Lending.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Lending.Models;
+using Lending.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,63 +9,70 @@ namespace Lending.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly AppDbContext _context;
+        private readonly INotificationRepository _notificationRepository;
+        private readonly IRepaymentRepository _repaymentRepository;
 
-        public NotificationService(AppDbContext context)
+        public NotificationService(INotificationRepository notificationRepository, IRepaymentRepository repaymentRepository)
         {
-            _context = context;
+            _notificationRepository = notificationRepository;
+            _repaymentRepository = repaymentRepository;
         }
 
-        public async Task<Notification> SendNotificationAsync(Notification notification)
+        public async Task<Notification> CreateAsync(Notification notification)
         {
             notification.SentDate = DateTime.UtcNow;
             notification.Status = NotificationStatus.Sent;
-            await _context.Notifications.AddAsync(notification);
-            await _context.SaveChangesAsync();
-            return notification;
+            return await _notificationRepository.CreateAsync(notification);
         }
 
-        public async Task<IEnumerable<Notification>> GetNotificationsByCustomerAsync(int customerId)
+        public async Task<IEnumerable<Notification>> GetNotificationsByUserAsync(int userId)
         {
-            return await _context.Notifications
-                                 .Where(n => n.CustomerId == customerId)
-                                 .ToListAsync();
+            var all = await _notificationRepository.GetAllAsync();
+            return all.Where(n => n.CustomerId == userId);
         }
 
         public async Task<IEnumerable<Notification>> GetPendingNotificationsAsync()
         {
-            return await _context.Notifications
-                                 .Where(n => n.Status == NotificationStatus.Failed)
-                                 .ToListAsync();
+            var all = await _notificationRepository.GetAllAsync();
+            return all.Where(n => n.Status == NotificationStatus.Failed);
         }
 
-        // Sends reminders 7 days before due date
+        // Instead of IsRead, we mark a notification as Sent to indicate it's "read"
+        public async Task<bool> MarkAsReadAsync(int notificationId)
+        {
+            var existing = await _notificationRepository.GetByIdAsync(notificationId);
+            if (existing == null)
+                return false;
+
+            existing.Status = NotificationStatus.Sent; // Mark as processed/read
+            await _notificationRepository.EditAsync(existing);
+            return true;
+        }
+
         public async Task SendRepaymentReminderAsync()
         {
             var today = DateTime.UtcNow;
-            var reminderDate = today.AddDays(7);
+            var reminderDate = today.AddDays(7).Date;
 
-            var repayments = await _context.Repayments
-                                           .Include(r => r.LoanApplication)
-                                           .ThenInclude(l => l.Customer)
-                                           .Where(r => r.DueDate.Date == reminderDate.Date && r.Status == RepaymentStatus.PENDING)
-                                           .ToListAsync();
+            var repayments = await _repaymentRepository.GetRepaymentsWithLoanAndCustomerAsync();
 
-            foreach (var r in repayments)
+            var reminders = repayments
+                .Where(r => r.DueDate.Date == reminderDate && r.Status == RepaymentStatus.PENDING)
+                .ToList();
+
+            foreach (var r in reminders)
             {
                 var notification = new Notification
                 {
-                    CustomerId = r.LoanApplication.CustomerId,
-                    LoanApplicationId = r.LoanApplicationId,
-                    Message = $"Your loan installment of {r.AmountDue:C} is due on {r.DueDate:dd/MM/yyyy}. Please ensure timely payment.",
+                    CustomerId = r.Loan.LoanApplication.CustomerId,
+                    LoanApplicationId = r.Loan.LoanApplicationId,
+                    Message = $"Your loan installment of {r.AmountDue:C} is due on {r.DueDate:dd/MM/yyyy}.",
                     SentDate = DateTime.UtcNow,
                     Status = NotificationStatus.Sent
                 };
 
-                await _context.Notifications.AddAsync(notification);
+                await _notificationRepository.CreateAsync(notification);
             }
-
-            await _context.SaveChangesAsync();
         }
     }
 }

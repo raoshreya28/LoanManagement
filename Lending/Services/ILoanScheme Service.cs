@@ -13,3 +13,10 @@ namespace Lending.Services
         Task<LoanScheme?> GetByIdAsync(int schemeId);
     }
 }
+
+
+
+
+
+
+
