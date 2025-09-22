@@ -26,13 +26,19 @@ namespace Lending.Services
 
         public async Task<Report> GenerateReportAsync(ReportType type, int generatedById)
         {
+            // Note: This is a placeholder for the actual report generation logic (e.g., using a reporting library).
+            // For now, it just creates a record of the report. The actual data extraction would happen here.
             var report = new Report
             {
                 Type = type,
                 Title = $"{type} Report - {DateTime.UtcNow:dd/MM/yyyy}",
+                // In a real application, you would generate a file and save its path
                 Url = $"Reports/{type}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf",
                 GeneratedAt = DateTime.UtcNow,
                 GeneratedById = generatedById
+                // The correct foreign key property to use.
+                // Assuming a LoanAdmin is generating the report
+                GeneratedById = 1 // Placeholder for a real user ID
             };
 
             return await _reportRepository.CreateAsync(report);

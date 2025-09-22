@@ -17,6 +17,5 @@ namespace Lending.Models
 
         [Range(0, int.MaxValue, ErrorMessage = "Assignments must be a non-negative number")]
         public int CurrentAssignments { get; set; } = 0;
-
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Lending.Models;
+﻿using Lending.Data;
+using Lending.Models;
 using Lending.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +31,7 @@ namespace Lending.Services
 
         public async Task<IEnumerable<Loan>> GetAllAsync()
         {
-            // Assuming repository already includes related data
+
             return await _loanRepository.GetAllAsync();
         }
 
