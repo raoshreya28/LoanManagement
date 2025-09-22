@@ -1,10 +1,12 @@
 ﻿using Lending.Data;
+using Lending.Models;
+using Lending.Repositories;
+using Lending.Services;
 using Lending.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Lending.Models;
 using System.Text;
 
 namespace Lending
@@ -26,6 +28,13 @@ namespace Lending
                     options.JsonSerializerOptions.ReferenceHandler =
                         System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 });
+            // Register application services
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+
 
             // 3️⃣ Database
             builder.Services.AddDbContext<AppDbContext>(options =>
