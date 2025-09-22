@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Lending.Repositories
 {
-    public class AuthRepository
+    public class AuthRepository : IAuthRepository
     {
         private readonly AppDbContext _context;
 
@@ -16,10 +16,9 @@ namespace Lending.Repositories
         public LoginResponseViewModel Login(LoginViewModel login)
         {
             var user = _context.Users
-                .Include(u => u.Role)   // IMPORTANT
-                .FirstOrDefault(u => u.UserName == login.UserName && u.PasswordHash == login.Password);
+                .FirstOrDefault(u => u.UserName == login.UserName);
 
-            if (user == null)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
             {
                 return new LoginResponseViewModel { IsSuccess = false };
             }
@@ -30,6 +29,7 @@ namespace Lending.Repositories
                 User = user
             };
         }
+
 
 
     }

@@ -29,10 +29,52 @@ namespace Lending
                         System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 });
             // Register application services
+            // --- Dependency Injection Registration ---
+
+            // Auth
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
+            // Customers
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+            // Loan Applications
+            builder.Services.AddScoped<ILoanApplicationService, LoanApplicationService>();
+            builder.Services.AddScoped<ILoanApplicationRepository, LoanApplicationRepository>();
+
+            // Loans
+            builder.Services.AddScoped<ILoanService, LoanService>();
+            builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+
+            // Loan Officers
+            builder.Services.AddScoped<ILoanOfficerService, LoanOfficerService>();
+            builder.Services.AddScoped<ILoanOfficerRepository, LoanOfficerRepository>();
+
+            // Loan Admins
+            builder.Services.AddScoped<ILoanAdminService, LoanAdminService>();
+            builder.Services.AddScoped<ILoanAdminRepository, LoanAdminRepository>();
+
+            // Loan Schemes
+            builder.Services.AddScoped<ILoanSchemeService, LoanSchemeService>();
+            builder.Services.AddScoped<ILoanSchemeRepository, LoanSchemeRepository>();
+
+            // Repayments
+            builder.Services.AddScoped<IRepaymentService, RepaymentService>();
+            builder.Services.AddScoped<IRepaymentRepository, RepaymentRepository>();
+
+            // Documents
+            builder.Services.AddScoped<IDocumentService, DocumentService>();
+            builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+
+            // Notifications
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            // Reports
+            builder.Services.AddScoped<IReportService, ReportService>();
+            builder.Services.AddScoped<IReportRepository, ReportRepository>();
+
 
 
 
