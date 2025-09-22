@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Lending.Data;
+﻿using Lending.Data;
 using Lending.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Lending.Repositories
 {
     public class NotificationRepository : INotificationRepository
     {
         private readonly AppDbContext _context;
+
         public NotificationRepository(AppDbContext context)
         {
             _context = context;

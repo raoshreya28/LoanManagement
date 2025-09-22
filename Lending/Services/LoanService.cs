@@ -1,3 +1,4 @@
+﻿using Lending.Models;
 ﻿using Lending.Data;
 using Lending.Models;
 using Lending.Repositories;
@@ -30,6 +31,7 @@ namespace Lending.Services
 
         public async Task<IEnumerable<Loan>> GetAllAsync()
         {
+
             return await _loanRepository.GetAllAsync();
         }
 

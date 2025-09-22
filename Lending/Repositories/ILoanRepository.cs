@@ -8,6 +8,7 @@ namespace Lending.Repositories
     {
         Task<Loan> CreateAsync(Loan loan);
         Task<Loan> EditAsync(Loan loan);
+        Task DeleteAsync(int loanId);
         Task<IEnumerable<Loan>> GetAllAsync();
         Task<Loan?> GetByIdAsync(int loanId);
     }

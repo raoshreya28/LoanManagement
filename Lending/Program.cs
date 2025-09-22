@@ -1,10 +1,12 @@
 ﻿using Lending.Data;
+using Lending.Models;
+using Lending.Repositories;
+using Lending.Services;
 using Lending.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Lending.Models;
 using System.Text;
 
 namespace Lending
@@ -26,6 +28,55 @@ namespace Lending
                     options.JsonSerializerOptions.ReferenceHandler =
                         System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 });
+            // Register application services
+            // --- Dependency Injection Registration ---
+
+            // Auth
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
+            // Customers
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+            // Loan Applications
+            builder.Services.AddScoped<ILoanApplicationService, LoanApplicationService>();
+            builder.Services.AddScoped<ILoanApplicationRepository, LoanApplicationRepository>();
+
+            // Loans
+            builder.Services.AddScoped<ILoanService, LoanService>();
+            builder.Services.AddScoped<ILoanRepository, LoanRepository>();
+
+            // Loan Officers
+            builder.Services.AddScoped<ILoanOfficerService, LoanOfficerService>();
+            builder.Services.AddScoped<ILoanOfficerRepository, LoanOfficerRepository>();
+
+            // Loan Admins
+            builder.Services.AddScoped<ILoanAdminService, LoanAdminService>();
+            builder.Services.AddScoped<ILoanAdminRepository, LoanAdminRepository>();
+
+            // Loan Schemes
+            builder.Services.AddScoped<ILoanSchemeService, LoanSchemeService>();
+            builder.Services.AddScoped<ILoanSchemeRepository, LoanSchemeRepository>();
+
+            // Repayments
+            builder.Services.AddScoped<IRepaymentService, RepaymentService>();
+            builder.Services.AddScoped<IRepaymentRepository, RepaymentRepository>();
+
+            // Documents
+            builder.Services.AddScoped<IDocumentService, DocumentService>();
+            builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+
+            // Notifications
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            // Reports
+            builder.Services.AddScoped<IReportService, ReportService>();
+            builder.Services.AddScoped<IReportRepository, ReportRepository>();
+
+
+
 
             // 3️⃣ Database
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -109,6 +160,13 @@ namespace Lending
 
             // --- Build App ---
             var app = builder.Build();
+
+            // ✅ (Optional) Ensure DB is created (useful first time)
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.EnsureCreated(); // Creates database & tables if not exists
+            }
 
             // --- Middleware ---
             if (app.Environment.IsDevelopment())

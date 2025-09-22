@@ -2,6 +2,8 @@
 using Lending.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
+
 using System.Threading.Tasks;
 
 namespace Lending.Repositories
@@ -28,11 +30,37 @@ namespace Lending.Repositories
             return loan;
         }
 
+        public async Task DeleteAsync(int loanId)
+        {
+            var loan = await _context.Loans.FindAsync(loanId);
+            if (loan != null)
+            {
+                _context.Loans.Remove(loan);
+                await _context.SaveChangesAsync();
+            }
         public async Task<IEnumerable<Loan>> GetAllAsync()
         {
             return await _context.Loans
                                  .Include(l => l.Repayments)
                                  .Include(l => l.LoanApplication)
+                                 .ToListAsync();
+        }
+
+        public async Task<Loan?> GetByIdAsync(int loanId)
+        {
+            return await _context.Loans
+                                 .Include(l => l.Repayments)
+                                 .Include(l => l.LoanApplication)
+                                     .ThenInclude(la => la.Customer)
+                                 .FirstOrDefaultAsync(l => l.LoanId == loanId);
+        }
+
+        public async Task<IEnumerable<Loan>> GetAllAsync()
+        {
+            return await _context.Loans
+                                 .Include(l => l.Repayments)
+                                 .Include(l => l.LoanApplication)
+                                     .ThenInclude(la => la.Customer)
                                  .ToListAsync();
         }
 

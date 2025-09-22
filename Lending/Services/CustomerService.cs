@@ -46,9 +46,12 @@ namespace Lending.Services
 
         public async Task<IEnumerable<LoanApplication>> GetLoanApplicationsAsync(int customerId)
         {
+            var allApplications = await _loanApplicationRepository.GetAllAsync();
+            return allApplications.Where(app => app.CustomerId == customerId);
             // Note: This method directly accesses the repository to get applications,
             // which is fine as it's a specific business query.
             return await _loanApplicationRepository.GetAllAsync();
         }
+
     }
 }
